@@ -3,7 +3,6 @@ FROM golang:alpine
 EXPOSE 80/tcp
 
 ENTRYPOINT ["golinks"]
-CMD ["-fqdn", "search.mills.io", "-title", "Local Mills Search"]
 
 RUN \
     apk add --update git && \
