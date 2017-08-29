@@ -63,7 +63,7 @@ func TestIndex(t *testing.T) {
 
 	templates.Load()
 
-	QueryHandler().ServeHTTP(w, r)
+	QueryHandler("").ServeHTTP(w, r)
 	assert.Equal(w.Code, http.StatusOK)
 	assert.Contains(w.Body.String(), `<input type="text" name="q">`)
 }
@@ -85,7 +85,7 @@ func TestCommand(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/?q=ping", nil)
 	w := httptest.NewRecorder()
 
-	QueryHandler().ServeHTTP(w, r)
+	QueryHandler("").ServeHTTP(w, r)
 	assert.Equal(w.Code, http.StatusOK)
 
 	body := w.Body.String()
@@ -107,11 +107,30 @@ func TestInvalidCommand(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/?q=asdf", nil)
 	w := httptest.NewRecorder()
 
-	QueryHandler().ServeHTTP(w, r)
+	QueryHandler("").ServeHTTP(w, r)
 	assert.Equal(w.Code, http.StatusBadRequest)
 
 	body := w.Body.String()
 	assert.Equal(body, "Invalid Command: asdf\n")
+}
+
+func TestInvalidCommandDefaultURL(t *testing.T) {
+	assert := assert.New(t)
+
+	db, _ = bolt.Open("test.db", 0600, nil)
+	defer db.Close()
+
+	r, _ := http.NewRequest("GET", "/?q=asdf", nil)
+	w := httptest.NewRecorder()
+
+	QueryHandler("http://google.com/search?q=%s").ServeHTTP(w, r)
+	assert.Equal(w.Code, http.StatusFound)
+
+	body := w.Body.String()
+	assert.Equal(
+		body,
+		"<a href=\"http://google.com/search?q=asdf\">Found</a>.\n\n",
+	)
 }
 
 func TestCommandError(t *testing.T) {
@@ -125,7 +144,7 @@ func TestCommandError(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/?q=explode", nil)
 	w := httptest.NewRecorder()
 
-	QueryHandler().ServeHTTP(w, r)
+	QueryHandler("").ServeHTTP(w, r)
 	assert.Equal(w.Code, http.StatusInternalServerError)
 
 	body := w.Body.String()
@@ -144,7 +163,7 @@ func TestCommandBookmark(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/?q=g%20foo%20bar", nil)
 	w := httptest.NewRecorder()
 
-	QueryHandler().ServeHTTP(w, r)
+	QueryHandler("").ServeHTTP(w, r)
 	assert.Condition(func() bool {
 		return w.Code >= http.StatusMultipleChoices &&
 			w.Code <= http.StatusTemporaryRedirect

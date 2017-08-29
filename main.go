@@ -19,6 +19,9 @@ var (
 	templates = templice.New(rice.MustFindBox("templates"))
 )
 
+// DefaultURL redirects to Google Search by default for unknown queries
+const DefaultURL string = "https://www.google.com/search?q=%s&btnOk"
+
 const openSearchTemplate string = `<?xml version="1.0" encoding="UTF-8"?>
 <OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
   <ShortName>%s</ShortName>
@@ -37,7 +40,7 @@ func render(w http.ResponseWriter, tmpl string, data interface{}) {
 }
 
 // QueryHandler ...
-func QueryHandler() http.Handler {
+func QueryHandler(url string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var (
 			cmd  string
@@ -69,11 +72,19 @@ func QueryHandler() http.Handler {
 				q := strings.Join(args, " ")
 				bookmark.Exec(w, r, q)
 			} else {
-				http.Error(
-					w,
-					fmt.Sprintf("Invalid Command: %v", cmd),
-					http.StatusBadRequest,
-				)
+				if url != "" {
+					u := url
+					if q != "" {
+						u = fmt.Sprintf(u, q)
+					}
+					http.Redirect(w, r, u, http.StatusFound)
+				} else {
+					http.Error(
+						w,
+						fmt.Sprintf("Invalid Command: %v", cmd),
+						http.StatusBadRequest,
+					)
+				}
 			}
 		}
 	})
@@ -95,6 +106,7 @@ func main() {
 		title  string
 		bind   string
 		fqdn   string
+		url    string
 	)
 
 	flag.StringVar(&config, "config", "", "config file")
@@ -102,6 +114,7 @@ func main() {
 	flag.StringVar(&title, "title", "Search", "OpenSearch Title")
 	flag.StringVar(&bind, "bind", "0.0.0.0:80", "[int]:<port> to bind to")
 	flag.StringVar(&fqdn, "fqdn", "localhost", "FQDN for public access")
+	flag.StringVar(&url, "url", DefaultURL, "default url to redirect to")
 	flag.Parse()
 
 	// TODO: Abstract the Config and Handlers better
@@ -122,7 +135,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	http.Handle("/", QueryHandler())
+	http.Handle("/", QueryHandler(url))
 	http.Handle("/opensearch.xml", OpenSearchHandler())
 	log.Fatal(http.ListenAndServe(bind, nil))
 }
