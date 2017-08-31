@@ -1,4 +1,6 @@
+*~*
 *.db
+*.bak
 golinks
 golinks-*
 rice-box.go

@@ -4,6 +4,9 @@ import (
 	"net/http/httptest"
 )
 
+// DefaultURL redirects to Google Search by default for unknown queries
+const DefaultURL string = "https://www.google.com/search?q=%s&btnK"
+
 // DefaultBookmarks ...
 var DefaultBookmarks map[string]string
 
@@ -29,9 +32,11 @@ func EnsureDefaultBookmarks() error {
 	for k, v := range DefaultBookmarks {
 		if _, ok := LookupBookmark(k); !ok {
 			w := httptest.NewRecorder()
+			r := httptest.NewRequest("POST", "/?q=add", nil)
+
 			args := []string{k, v}
 			add := Add{}
-			if err := add.Exec(w, args); err != nil {
+			if err := add.Exec(w, r, args); err != nil {
 				return err
 			}
 		}

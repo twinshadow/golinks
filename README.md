@@ -1,4 +1,5 @@
 # golinks
+
 [![Build Status](https://travis-ci.org/prologic/golinks.svg)](https://travis-ci.org/prologic/golinks)
 [![GoDoc](https://godoc.org/github.com/prologic/golinks?status.svg)](https://godoc.org/github.com/prologic/golinks)
 [![Wiki](https://img.shields.io/badge/docs-wiki-blue.svg)](https://github.com/prologic/golinks/wiki)

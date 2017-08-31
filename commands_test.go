@@ -26,7 +26,7 @@ func (f Foo) Desc() string {
 }
 
 // Exec ...
-func (f Foo) Exec(w http.ResponseWriter, args []string) error {
+func (f Foo) Exec(w http.ResponseWriter, r *http.Request, args []string) error {
 	w.Write([]byte(fmt.Sprintf("foo bar")))
 	return nil
 }
@@ -39,8 +39,10 @@ func TestNewCommand(t *testing.T) {
 	assert.Equal(cmd.Desc(), "foo bar")
 
 	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "?q=foo", nil)
+
 	args := []string{}
-	err := cmd.Exec(w, args)
+	err := cmd.Exec(w, r, args)
 	assert.Nil(err)
 
 	body := w.Body.String()
@@ -55,8 +57,10 @@ func TestPingCommand(t *testing.T) {
 	assert.Contains(cmd.Desc(), "ping")
 
 	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "?q=ping", nil)
+
 	args := []string{}
-	err := cmd.Exec(w, args)
+	err := cmd.Exec(w, r, args)
 	assert.Nil(err)
 
 	body := w.Body.String()
@@ -77,8 +81,10 @@ func TestListCommand(t *testing.T) {
 	assert.Contains(cmd.Desc(), "list")
 
 	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "?q=list", nil)
+
 	args := []string{}
-	err = cmd.Exec(w, args)
+	err = cmd.Exec(w, r, args)
 	assert.Nil(err)
 
 	body := w.Body.String()
@@ -94,19 +100,23 @@ func TestListCommand(t *testing.T) {
 func TestHelpCommand(t *testing.T) {
 	assert := assert.New(t)
 
-	templates.Load()
-
 	cmd := Help{}
 	assert.Equal(cmd.Name(), "help")
 	assert.Contains(cmd.Desc(), "help")
 
 	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "?q=help", nil)
+
 	args := []string{}
-	err := cmd.Exec(w, args)
+	err := cmd.Exec(w, r, args)
 	assert.Nil(err)
 
-	body := w.Body.String()
-	assert.Contains(body, "<h1>Help</h1>")
+	assert.Condition(func() bool {
+		return w.Code >= http.StatusMultipleChoices &&
+			w.Code <= http.StatusTemporaryRedirect
+	})
+
+	assert.Equal(w.Header().Get("Location"), "/help")
 }
 
 func TestTimeCommand(t *testing.T) {
@@ -117,8 +127,10 @@ func TestTimeCommand(t *testing.T) {
 	assert.Contains(cmd.Desc(), "time")
 
 	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "?q=time", nil)
+
 	args := []string{}
-	err := cmd.Exec(w, args)
+	err := cmd.Exec(w, r, args)
 	assert.Nil(err)
 
 	body := w.Body.String()
@@ -135,8 +147,10 @@ func TestDateCommand(t *testing.T) {
 	assert.Contains(cmd.Desc(), "date")
 
 	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "?q=date", nil)
+
 	args := []string{}
-	err := cmd.Exec(w, args)
+	err := cmd.Exec(w, r, args)
 	assert.Nil(err)
 
 	body := w.Body.String()
@@ -159,8 +173,10 @@ func TestAddCommand(t *testing.T) {
 	assert.Contains(cmd.Desc(), "add")
 
 	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "?q=add", nil)
+
 	args := []string{"g", "https://www.google.com/search?q=%s&btnK"}
-	err := cmd.Exec(w, args)
+	err := cmd.Exec(w, r, args)
 	assert.Nil(err)
 
 	bookmark, ok := LookupBookmark("g")

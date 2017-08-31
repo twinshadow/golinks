@@ -14,7 +14,7 @@ import (
 type Command interface {
 	Name() string
 	Desc() string
-	Exec(w http.ResponseWriter, args []string) error
+	Exec(w http.ResponseWriter, r *http.Request, args []string) error
 }
 
 var commands map[string]Command
@@ -60,7 +60,7 @@ func (p Ping) Desc() string {
 }
 
 // Exec ...
-func (p Ping) Exec(w http.ResponseWriter, args []string) error {
+func (p Ping) Exec(w http.ResponseWriter, r *http.Request, args []string) error {
 	w.Write([]byte(fmt.Sprintf("pong %d", time.Now().Unix())))
 	return nil
 }
@@ -82,7 +82,7 @@ func (p List) Desc() string {
 }
 
 // Exec ...
-func (p List) Exec(w http.ResponseWriter, args []string) error {
+func (p List) Exec(w http.ResponseWriter, r *http.Request, args []string) error {
 	var bs, cs []string
 
 	err := db.Update(func(tx *bolt.Tx) error {
@@ -136,8 +136,8 @@ func (p Help) Desc() string {
 }
 
 // Exec ...
-func (p Help) Exec(w http.ResponseWriter, args []string) error {
-	render(w, "help", nil)
+func (p Help) Exec(w http.ResponseWriter, r *http.Request, args []string) error {
+	http.Redirect(w, r, "/help", http.StatusFound)
 	return nil
 }
 
@@ -158,7 +158,7 @@ func (p Date) Desc() string {
 }
 
 // Exec ...
-func (p Date) Exec(w http.ResponseWriter, args []string) error {
+func (p Date) Exec(w http.ResponseWriter, r *http.Request, args []string) error {
 	w.Write([]byte(time.Now().Format(http.TimeFormat)))
 	return nil
 }
@@ -180,7 +180,7 @@ func (p Time) Desc() string {
 }
 
 // Exec ...
-func (p Time) Exec(w http.ResponseWriter, args []string) error {
+func (p Time) Exec(w http.ResponseWriter, r *http.Request, args []string) error {
 	w.Write([]byte(time.Now().Format("15:04:05")))
 	return nil
 }
@@ -208,7 +208,7 @@ func (p Add) Desc() string {
 }
 
 // Exec ...
-func (p Add) Exec(w http.ResponseWriter, args []string) error {
+func (p Add) Exec(w http.ResponseWriter, r *http.Request, args []string) error {
 	var name, url string
 
 	if len(args) == 2 {
