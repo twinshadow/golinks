@@ -4,6 +4,7 @@
 [![GoDoc](https://godoc.org/github.com/prologic/golinks?status.svg)](https://godoc.org/github.com/prologic/golinks)
 [![Wiki](https://img.shields.io/badge/docs-wiki-blue.svg)](https://github.com/prologic/golinks/wiki)
 [![Go Report Card](https://goreportcard.com/badge/github.com/prologic/golinks)](https://goreportcard.com/report/github.com/prologic/golinks)
+[![Image Layers](https://badge.imagelayers.io/prologic/golinks:latest.svg)](https://imagelayers.io/?images=prologic/golinks:latest)
 [![Coverage](https://coveralls.io/repos/prologic/golinks/badge.svg)](https://coveralls.io/r/prologic/golinks)
 
 golinks is a web app that allows you to create smart bookmarks, commands and aliases by pointing your web browser's default search engine at a running instance. Similar to bunny1 or yubnub.
