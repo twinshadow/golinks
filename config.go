@@ -4,4 +4,5 @@ package main
 type Config struct {
 	Title string
 	FQDN  string
+	URL   string
 }

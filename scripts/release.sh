@@ -22,22 +22,22 @@ echo -n "Building binaries ... "
 
 rice embed-go
 
-GOOS=linux GOARCH=amd64 go build -o ./bin/golinks-Linux-x86_64 .
-GOOS=linux GOARCH=arm64 go build -o ./bin/golinks-Linux-x86_64 .
-GOOS=darwin GOARCH=amd64 go build -o ./bin/golinks-Darwin-x86_64 .
-GOOS=windows GOARCH=amd64 go build -o ./bin/golinks-Windows-x86_64.exe .
+GOOS=linux GOARCH=amd64 go build -o ./bin/golinks-go-Linux-x86_64 .
+GOOS=linux GOARCH=arm64 go build -o ./bin/golinks-go-Linux-x86_64 .
+GOOS=darwin GOARCH=amd64 go build -o ./bin/golinks-go-Darwin-x86_64 .
+GOOS=windows GOARCH=amd64 go build -o ./bin/golinks-go-Windows-x86_64.exe .
 
 echo "DONE"
 
 echo -n "Uploading binaries ... "
 
 github-release release \
-    -u prologic -p -r golinks \
+    -u prologic -p -r golinks-go \
     -t ${TAG} -n "${NAME}" -d "${DESC}"
 
 for file in bin/*; do
     name="$(echo $file | sed -e 's|bin/||g')"
-    github-release upload -u prologic -r golinks -t ${TAG} -n $name -f $file
+    github-release upload -u prologic -r golinks-go -t ${TAG} -n $name -f $file
 done
 
 echo "DONE"

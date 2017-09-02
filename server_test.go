@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/boltdb/bolt"
+	"github.com/julienschmidt/httprouter"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -26,31 +27,29 @@ func (e Explode) Desc() string {
 	`
 }
 
-func (e Explode) Exec(w http.ResponseWriter, args []string) error {
+func (e Explode) Exec(w http.ResponseWriter, r *http.Request, args []string) error {
 	return errors.New("kaboom")
 }
 
 func TestRender(t *testing.T) {
 	assert := assert.New(t)
 
+	s := NewServer(":8000", Config{})
 	w := httptest.NewRecorder()
 
-	templates.Load()
-
-	render(w, "index", nil)
+	s.render("index", w, nil)
 
 	assert.Equal(w.Code, http.StatusOK)
-	assert.Contains(w.Body.String(), `<input type="text" name="q">`)
+	assert.Contains(w.Body.String(), `name="q"`)
 }
 
 func TestRenderError(t *testing.T) {
 	assert := assert.New(t)
 
+	s := NewServer(":8000", Config{})
 	w := httptest.NewRecorder()
 
-	templates.Load()
-
-	render(w, "asdf", nil)
+	s.render("asdf", w, nil)
 
 	assert.Equal(w.Code, http.StatusInternalServerError)
 }
@@ -58,23 +57,25 @@ func TestRenderError(t *testing.T) {
 func TestIndex(t *testing.T) {
 	assert := assert.New(t)
 
-	r, _ := http.NewRequest("GET", "", nil)
+	s := NewServer(":8000", Config{})
 	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/", nil)
+	p := httprouter.Params{}
 
-	templates.Load()
-
-	QueryHandler("").ServeHTTP(w, r)
+	s.IndexHandler()(w, r, p)
 	assert.Equal(w.Code, http.StatusOK)
-	assert.Contains(w.Body.String(), `<input type="text" name="q">`)
+	assert.Contains(w.Body.String(), `name="q"`)
 }
 
 func TestOpenSearch(t *testing.T) {
 	assert := assert.New(t)
 
-	r, _ := http.NewRequest("GET", "/opensearch.xml", nil)
+	s := NewServer(":8000", Config{})
 	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/opensearch.xml", nil)
+	p := httprouter.Params{}
 
-	OpenSearchHandler().ServeHTTP(w, r)
+	s.OpenSearchHandler()(w, r, p)
 	assert.Equal(w.Code, http.StatusOK)
 	assert.Contains(w.Body.String(), "<OpenSearchDescription")
 }
@@ -82,10 +83,12 @@ func TestOpenSearch(t *testing.T) {
 func TestCommand(t *testing.T) {
 	assert := assert.New(t)
 
-	r, _ := http.NewRequest("GET", "/?q=ping", nil)
+	s := NewServer(":8000", Config{})
 	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/?q=ping", nil)
+	p := httprouter.Params{}
 
-	QueryHandler("").ServeHTTP(w, r)
+	s.IndexHandler()(w, r, p)
 	assert.Equal(w.Code, http.StatusOK)
 
 	body := w.Body.String()
@@ -104,10 +107,12 @@ func TestInvalidCommand(t *testing.T) {
 	db, _ = bolt.Open("test.db", 0600, nil)
 	defer db.Close()
 
-	r, _ := http.NewRequest("GET", "/?q=asdf", nil)
+	s := NewServer(":8000", Config{URL: ""})
 	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/?q=asdf", nil)
+	p := httprouter.Params{}
 
-	QueryHandler("").ServeHTTP(w, r)
+	s.IndexHandler()(w, r, p)
 	assert.Equal(w.Code, http.StatusBadRequest)
 
 	body := w.Body.String()
@@ -120,16 +125,20 @@ func TestInvalidCommandDefaultURL(t *testing.T) {
 	db, _ = bolt.Open("test.db", 0600, nil)
 	defer db.Close()
 
-	r, _ := http.NewRequest("GET", "/?q=asdf", nil)
+	s := NewServer(":8000", Config{URL: DefaultURL})
 	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/?q=asdf", nil)
+	p := httprouter.Params{}
 
-	QueryHandler("http://google.com/search?q=%s").ServeHTTP(w, r)
-	assert.Equal(w.Code, http.StatusFound)
+	s.IndexHandler()(w, r, p)
+	assert.Condition(func() bool {
+		return w.Code >= http.StatusMultipleChoices &&
+			w.Code <= http.StatusTemporaryRedirect
+	})
 
-	body := w.Body.String()
 	assert.Equal(
-		body,
-		"<a href=\"http://google.com/search?q=asdf\">Found</a>.\n\n",
+		w.Header().Get("Location"),
+		"https://www.google.com/search?q=asdf&btnK",
 	)
 }
 
@@ -141,10 +150,12 @@ func TestCommandError(t *testing.T) {
 
 	RegisterCommand("explode", Explode{})
 
-	r, _ := http.NewRequest("GET", "/?q=explode", nil)
+	s := NewServer(":8000", Config{})
 	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/?q=explode", nil)
+	p := httprouter.Params{}
 
-	QueryHandler("").ServeHTTP(w, r)
+	s.IndexHandler()(w, r, p)
 	assert.Equal(w.Code, http.StatusInternalServerError)
 
 	body := w.Body.String()
@@ -160,10 +171,12 @@ func TestCommandBookmark(t *testing.T) {
 	err := EnsureDefaultBookmarks()
 	assert.Nil(err)
 
-	r, _ := http.NewRequest("GET", "/?q=g%20foo%20bar", nil)
+	s := NewServer(":8000", Config{})
 	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/?q=g%20foo%20bar", nil)
+	p := httprouter.Params{}
 
-	QueryHandler("").ServeHTTP(w, r)
+	s.IndexHandler()(w, r, p)
 	assert.Condition(func() bool {
 		return w.Code >= http.StatusMultipleChoices &&
 			w.Code <= http.StatusTemporaryRedirect

@@ -1,17 +1,30 @@
-FROM golang:alpine
+# Build
+FROM golang:alpine AS build
 
-EXPOSE 80/tcp
+ARG TAG
+ARG BUILD
 
-ENTRYPOINT ["golinks"]
+ENV APP golinks
+ENV REPO prologic/$APP
 
-RUN \
-    apk add --update git && \
+RUN apk add --update git make build-base && \
     rm -rf /var/cache/apk/*
 
-RUN mkdir -p /go/src/golinks
-WORKDIR /go/src/golinks
+WORKDIR /go/src/github.com/$REPO
+COPY . /go/src/github.com/$REPO
+RUN make TAG=$TAG BUILD=$BUILD build
 
-COPY . /go/src/golinks
+# Runtime
+FROM scratch
 
-RUN go get -v -d
-RUN go install -v
+ENV APP golinks
+ENV REPO prologic/$APP
+
+LABEL golinks.app main
+
+COPY --from=build /go/src/github.com/${REPO}/${APP} /${APP}
+
+EXPOSE 8000/tcp
+
+ENTRYPOINT ["/golinks"]
+CMD []
