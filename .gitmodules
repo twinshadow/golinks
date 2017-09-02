@@ -16,6 +16,18 @@
 [submodule "vendor/github.com/kardianos/osext"]
 	path = vendor/github.com/kardianos/osext
 	url = https://github.com/kardianos/osext
-[submodule "vendor/go.iondynamics.net/templice"]
-	path = vendor/go.iondynamics.net/templice
-	url = https://github.com/ionDynamics/templice
+[submodule "vendor/github.com/NYTimes/gziphandler"]
+	path = vendor/github.com/NYTimes/gziphandler
+	url = https://github.com/NYTimes/gziphandler
+[submodule "vendor/github.com/julienschmidt/httprouter"]
+	path = vendor/github.com/julienschmidt/httprouter
+	url = https://github.com/julienschmidt/httprouter
+[submodule "vendor/github.com/rcrowley/go-metrics"]
+	path = vendor/github.com/rcrowley/go-metrics
+	url = https://github.com/rcrowley/go-metrics
+[submodule "vendor/github.com/thoas/stats"]
+	path = vendor/github.com/thoas/stats
+	url = https://github.com/thoas/stats
+[submodule "vendor/github.com/unrolled/logger"]
+	path = vendor/github.com/unrolled/logger
+	url = https://github.com/unrolled/logger
