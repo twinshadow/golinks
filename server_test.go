@@ -101,6 +101,27 @@ func TestCommand(t *testing.T) {
 	assert.WithinDuration(time.Now(), time.Unix(n, 0), 1*time.Second)
 }
 
+func TestCaseInsensitive(t *testing.T) {
+	assert := assert.New(t)
+
+	s := NewServer(":8000", Config{})
+	w := httptest.NewRecorder()
+	r, _ := http.NewRequest("GET", "/?q=Ping", nil)
+	p := httprouter.Params{}
+
+	s.IndexHandler()(w, r, p)
+	assert.Equal(w.Code, http.StatusOK)
+
+	body := w.Body.String()
+	tokens := strings.Split(body, " ")
+	assert.Len(tokens, 2)
+	assert.Equal(tokens[0], "pong")
+
+	n, err := strconv.ParseInt(tokens[1], 10, 64)
+	assert.Nil(err)
+	assert.WithinDuration(time.Now(), time.Unix(n, 0), 1*time.Second)
+}
+
 func TestInvalidCommand(t *testing.T) {
 	assert := assert.New(t)
 
