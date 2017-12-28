@@ -1,7 +1,7 @@
 builds:
   - binary: golinks
-    flags: -tags "netgo static_build" -installsuffix netgo
-    ldflags: -w -X mail.Version={{.Version}} -X main.GitCommit={{.Commit} -X mail.Build={.Build}}
+    flags: -tags "static_build"
+    ldflags: -w -X mail.Version={{.Version}} -X main.Commit={{.Commit}}
     env:
       - CGO_ENABLED=0
     goos:
@@ -19,5 +19,5 @@ builds:
       - 7
     hooks:
       pre: rice embed-go
-    sign:
-      artifacts: checksum
+sign:
+  artifacts: checksum
