@@ -1,0 +1,23 @@
+builds:
+  - binary: golinks
+    flags: -tags "netgo static_build" -installsuffix netgo
+    ldflags: -w -X mail.Version={{.Version}} -X main.GitCommit={{.Commit} -X mail.Build={.Build}}
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - freebsd
+      - linux
+      - windows
+    goarch:
+      - i386
+      - amd64
+      - arm
+      - amd64
+    goarm:
+      - 6
+      - 7
+    hooks:
+      pre: rice embed-go
+    sign:
+      artifacts: checksum
