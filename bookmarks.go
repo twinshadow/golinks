@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/boltdb/bolt"
 )
@@ -35,6 +36,7 @@ func (b Bookmark) Exec(w http.ResponseWriter, r *http.Request, q string) {
 
 // LookupBookmark ...
 func LookupBookmark(name string) (bookmark Bookmark, ok bool) {
+	name = strings.ToLower(name)
 	err := db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("bookmarks"))
 		if b == nil {

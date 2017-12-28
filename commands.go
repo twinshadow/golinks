@@ -36,6 +36,7 @@ func RegisterCommand(name string, command Command) {
 
 // LookupCommand ...
 func LookupCommand(name string) Command {
+	name = strings.ToLower(name)
 	command, ok := commands[name]
 	if ok {
 		return command
