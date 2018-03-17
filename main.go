@@ -37,7 +37,7 @@ func main() {
 	flag.Parse()
 
 	if version {
-		fmt.Printf("golinks v%s", FullVersion())
+		fmt.Println(FullVersion())
 		os.Exit(0)
 	}
 

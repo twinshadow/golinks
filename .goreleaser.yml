@@ -1,7 +1,7 @@
 builds:
   - binary: golinks
     flags: -tags "static_build"
-    ldflags: -w -X mail.Version={{.Version}} -X main.Commit={{.Commit}}
+    ldflags: -w -X main.Version={{.Version}} -X main.Commit={{.Commit}}
     env:
       - CGO_ENABLED=0
     goos:
