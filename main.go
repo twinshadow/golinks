@@ -32,7 +32,6 @@ func main() {
 	flag.StringVar(&title, "title", "Search", "OpenSearch Title")
 	flag.StringVar(&bind, "bind", "0.0.0.0:8000", "[int]:<port> to bind to")
 	flag.StringVar(&fqdn, "fqdn", "localhost", "FQDN for public access")
-	flag.StringVar(&url, "url", DefaultURL, "default url to redirect to")
 
 	flag.Parse()
 
@@ -51,11 +50,6 @@ func main() {
 		log.Fatal(err)
 	}
 	defer db.Close()
-
-	err = EnsureDefaultBookmarks()
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	NewServer(bind, cfg).ListenAndServe()
 }
