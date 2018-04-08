@@ -7,28 +7,28 @@ REPO?=prologic/$(APP)
 TAG?=latest
 BUILD?=-dev
 
-all: dev
+all: build
 
 dev: build
-	@./$(APP)
+	./$(APP)
 
 deps:
-	@go get github.com/GeertJohan/go.rice/rice
-	@go get ./...
-	@rice embed-go
+	go get github.com/GeertJohan/go.rice/rice
+	go get ./...
+	rice embed-go
 
-build: clean deps
-	@echo " -> Building $(TAG)$(BUILD)"
-	@go build -tags "netgo static_build" -installsuffix netgo \
+build: deps
+	echo " -> Building $(TAG)$(BUILD)"
+	go build -tags "netgo static_build" -installsuffix netgo \
 		-ldflags "-w -X github.com/$(REPO).GitCommit=$(COMMIT) -X github.com/$(REPO).Build=$(BUILD)" .
-	@echo "Built $$(./$(APP) -v)"
+	echo "Built $$(./$(APP) -v)"
 
 image:
-	@docker build --build-arg TAG=$(TAG) --build-arg BUILD=$(BUILD) -t $(REPO):$(TAG) .
-	@echo "Image created: $(REPO):$(TAG)"
+	docker build --build-arg TAG=$(TAG) --build-arg BUILD=$(BUILD) -t $(REPO):$(TAG) .
+	echo "Image created: $(REPO):$(TAG)"
 
 test:
-	@go test -v -cover -race $(TEST_ARGS)
+	go test -v -cover -race $(TEST_ARGS)
 
 clean:
-	@rm -rf $(APP)
+	rm -rf $(APP)
