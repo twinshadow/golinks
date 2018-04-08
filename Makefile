@@ -31,4 +31,4 @@ test:
 	go test -v -cover -race $(TEST_ARGS)
 
 clean:
-	rm -rf $(APP)
+	rm -rf $(APP) *.db
